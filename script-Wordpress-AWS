@@ -1,0 +1,35 @@
+* APACHE / MYSQL / PHP
+sudo yum -y update
+sudo yum -y install httpd56 mysql56-server php70 php70-mysqlnd
+sudo service httpd start
+dbname=dbwp
+dbusername=usrwp
+dbuserpass=1234567
+******************************************************************************************
+* BD
+sudo service mysqld start
+mysql -u root <<mysql-db
+CREATE USER 'usrwp'@'localhost' IDENTIFIED BY '#a$bw0pr3ss';
+CREATE DATABASE wpdb;
+GRANT ALL PRIVILEGES ON wpdb.* TO 'usrwp'@'localhost';
+FLUSH PRIVILEGES;
+mysql-db
+******************************************************************************************
+* WORDPRESS
+wget https://wordpress.org/latest.tar.gz
+tar -xzf latest.tar.gz
+cat wordpress/wp-config-sample.php | sed 's/database_name_here/wpdb/g' | sed 's/username_here/usrwp/g' | sed 's/password_here/#a$bw0pr3ss/g' >wp-config.php
+cd wordpress
+sudo mv * /var/www/html/
+sed -i '151s/.*/     AllowOverride all/' /etc/httpd/conf/httpd.conf
+sudo groupadd www
+sudo usermod -a -G www apache
+sudo chown -R apache /var/www
+sudo chgrp -R www /var/www
+sudo chmod 2775 /var/www
+find /var/www -type d -exec sudo chmod 2775 {} \;
+find /var/www -type f -exec sudo chmod 0664 {} \;
+sudo service httpd restart
+sudo service mysqld restart
+sudo service httpd restart
+******************************************************************************************
